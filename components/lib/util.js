@@ -29,13 +29,11 @@ var zmitiUtil = {
 	wxConfig: function(title, desc, url, isDebug = false) {
 		var s = this;
 
+		return;
+
 		var img = window.baseUrl + '/assets/images/300.jpg';
-		//img = 'http://h5.zmiti.com/public/collection/assets/images/300.jpg';
 		var appId = this.wxInfo().wxappid;
-
-
 		var durl = url || location.href.split('#')[0];
-
 		var code_durl = encodeURIComponent(durl);
 
 		if(durl.indexOf('localhost:')>-1){//本地调用，不用请远程请求接口。
@@ -46,7 +44,15 @@ var zmitiUtil = {
 		$.ajax({
 			type: 'get',
 			//url: "http://api.zmiti.com/weixin/jssdk.php?type=signature&durl=" + code_durl,
-			url:'http://openapi.zhongguowangshi.com/wxHandler.ashx?callback=jsonFlickrFeed&action=getWeixinConfig&debug=0&site=xhsh5&_=1534295743434',
+			url: 'http://openapi.zhongguowangshi.com/wxHandler.ashx',
+			//?callback=jsonFlickrFeed&action=getWeixinConfig&debug=0&site=xhsh5&_=1534295743434
+			data:{
+				action: "getWeixinConfig",
+				debug:1,
+				site: "xhsh5",
+				url: code_durl,
+				callback: "jsonFlickrFeed"
+			},
 			dataType: 'jsonp',
 			jsonp: "callback",
 			jsonpCallback: "jsonFlickrFeed",
@@ -54,10 +60,10 @@ var zmitiUtil = {
 			},
 			success: function(data) {
 				wx.config({
-					debug: isDebug, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+					debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
 					appId: appId, // 必填，公众号的唯一标识
-					timestamp: '1534295744', // 必填，生成签名的时间戳
-					nonceStr: 'fjkAuAtxnvkzcBed', // 必填，生成签名的随机串
+					timestamp: data.timestamp, // 必填，生成签名的时间戳
+					nonceStr: data.nonceStr, // 必填，生成签名的随机串
 					signature: data.signature, // 必填，签名，见附录1
 					jsApiList: ['checkJsApi',
 						'onMenuShareTimeline',

@@ -68,7 +68,9 @@ new Vue({
 					<div class='zmiti-progress'>{{width}}%</div>
 			    </a>
 			</div>
-		</div> 
+		</div>
+
+	
 	</div>`,
 	methods: {
 

@@ -1,4 +1,5 @@
-﻿var imgs = {
+ 
+var imgs = {
 	logo: './assets/images/logo.png',
 	logo1: './assets/images/logo1.png',
 	logo2: './assets/images/logo2.png',
@@ -28,6 +29,8 @@
 	jiasu1:'./assets/images/jiasu1.png',
 	submitSuccess:'./assets/images/submit-success.png',
 }
+
+
 
 var organizationArr = [
 	{

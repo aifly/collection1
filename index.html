@@ -9,7 +9,7 @@
 	<script>
 		document.getElementsByTagName('html')[0].style.fontSize = 750 / 10 + 'px';
 		window.protocol = location.protocol;
-		window.h5name = 'collection1';
+		window.h5name = 'collection';
 		window.customid = '1697340893';//改革开放40周年.
 
 		window.baseUrl = window.protocol+'//api.zmiti.com/v2';
@@ -27,38 +27,49 @@
 		document.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
 
 	</script>
-	<style>
-		iframe{
-			position: absolute;
-			left: 0;
-			top: 0;
-			
-		}
-	</style>
+	 
 </head>
 <body>
 	<div id="app"></div>
-	
+	<script src='//res.wx.qq.com/open/js/jweixin-1.2.0.js'></script>
+	<script>
+		var wxHandlercallback = function(res) {
+			wx.config({
+				debug: false,
+				appId: res.appId,
+				timestamp: res.timestamp,
+				nonceStr: res.nonceStr,
+				signature: res.signature,
+				jsApiList: ["onMenuShareTimeline", "onMenuShareAppMessage", "onMenuShareQQ", "onMenuShareQZone", "onMenuShareWeibo"]
+			});
+			wx.ready(function () {
+					var config = {
+					title: document.title,
+					desc: window.desc,
+					link: document.URL,
+					imgUrl: 'http://h5.zhongguowangshi.com/h5/collection/assets/images/302.jpg'
+					};
+				wx.onMenuShareAppMessage(config);
+				wx.onMenuShareTimeline(config);
+			});
+		}
+	</script>
+	<script src="//openapi.zhongguowangshi.com/wxHandler.ashx?callback=wxHandlercallback&action=getWeixinConfig&debug=1&site=xhsh5"></script>
 	<script>
 		function loadScript(src){
 			var script = document.createElement('script');
 			script.src =src+"?t="+new Date().getTime();
 			document.body.appendChild(script)
 		}
-	    (function(){
-	       var script = document.createElement('script');
-	       script.src = window.protocol + '//res.wx.qq.com/open/js/jweixin-1.2.0.js';
-	       document.body.appendChild(script);
-	    })()
-  		//
-		  /*
-		  loadScript('./assets/js/base.js');
-		  loadScript('./assets/js/index.js');
-		  */
+		/*
+		loadScript('./assets/js/base.js');
+		loadScript('./assets/js/index.js');
+		*/
 	</script>
+
+	<script src='./assets/js/base.js'></script>
+	<script src='http://localhost:4046/index.js' onerror="loadScript('./assets/js/index.js')"></script> 
 <!-- 
 -->
-<script src='./assets/js/base.js'></script>
-<script src='http://localhost:4046/index.js' onerror="loadScript('./assets/js/index.js')"></script> 
 </body>
 </html>

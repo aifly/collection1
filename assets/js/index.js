@@ -12507,12 +12507,11 @@
 
 			var s = this;
 
+			return;
+
 			var img = window.baseUrl + '/assets/images/300.jpg';
-			//img = 'http://h5.zmiti.com/public/collection/assets/images/300.jpg';
 			var appId = this.wxInfo().wxappid;
-
 			var durl = url || location.href.split('#')[0];
-
 			var code_durl = encodeURIComponent(durl);
 
 			if (durl.indexOf('localhost:') > -1) {
@@ -12524,17 +12523,25 @@
 			_jquery2["default"].ajax({
 				type: 'get',
 				//url: "http://api.zmiti.com/weixin/jssdk.php?type=signature&durl=" + code_durl,
-				url: 'http://openapi.zhongguowangshi.com/wxHandler.ashx?callback=jsonFlickrFeed&action=getWeixinConfig&debug=0&site=xhsh5&_=1534295743434',
+				url: 'http://openapi.zhongguowangshi.com/wxHandler.ashx',
+				//?callback=jsonFlickrFeed&action=getWeixinConfig&debug=0&site=xhsh5&_=1534295743434
+				data: {
+					action: "getWeixinConfig",
+					debug: 1,
+					site: "xhsh5",
+					url: code_durl,
+					callback: "jsonFlickrFeed"
+				},
 				dataType: 'jsonp',
 				jsonp: "callback",
 				jsonpCallback: "jsonFlickrFeed",
 				error: function error() {},
 				success: function success(data) {
 					wx.config({
-						debug: isDebug, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+						debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
 						appId: appId, // 必填，公众号的唯一标识
-						timestamp: '1534295744', // 必填，生成签名的时间戳
-						nonceStr: 'fjkAuAtxnvkzcBed', // 必填，生成签名的随机串
+						timestamp: data.timestamp, // 必填，生成签名的时间戳
+						nonceStr: data.nonceStr, // 必填，生成签名的随机串
 						signature: data.signature, // 必填，签名，见附录1
 						jsApiList: ['checkJsApi', 'onMenuShareTimeline', 'onMenuShareAppMessage', 'onMenuShareQQ', 'onMenuShareWeibo', 'hideMenuItems', 'showMenuItems', 'hideAllNonBaseMenuItem', 'showAllNonBaseMenuItem'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
 					});
@@ -22907,6 +22914,11 @@
 
 				this.showMeanInput = !this.showMeanInput;
 				setTimeout(function () {
+					setTimeout(function () {
+						_this.scroll.scrollTo(0, _this.showMeanInput ? _this.scroll.wrapperHeight - _this.scroll.scrollerHeight : 0, 1);
+						_this.scroll.refresh();
+					}, 100);
+					_this.scroll.scrollTo(0, _this.showMeanInput ? _this.scroll.wrapperHeight - _this.scroll.scrollerHeight : 0, 1);
 					_this.scroll.refresh();
 				}, 400);
 			},
@@ -23083,7 +23095,9 @@
 				setTimeout(function () {
 					_this4.initCanvas();
 					_this4.scroll = new _iscroll2['default'](_this4.$refs['page'], {
-						scrollbars: true
+						scrollbars: true,
+						probeType: 3,
+						bounce: false
 					});
 				}, 100);
 			});

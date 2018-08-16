@@ -21,6 +21,8 @@ export default class Point {
 
         this.speedX = Math.random();
 
+        this.alpha = 1;
+
         this.rotate = Math.random() * 360 / 180 * Math.PI;
         this.render();
 

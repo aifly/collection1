@@ -1,28 +1,9 @@
 <template>
 	<div ref='page'  class="lt-full zmiti-index-main-ui "   :class="{'show':show}" >
 		
-		<div class="zmiti-moon" :class="{'hide':!showOthers}">
-			<img :src="imgs.moon" alt="">
-		</div>
-
-		<div class="zmiti-plane" :class="planeClass">
-			<img :src="imgs.plane" alt="">
-		</div>
-
-		<div class="zmiti-light" v-show='showLight'>
-			<img :src="imgs.light" alt="">
-		</div>
-		
-		<transition name='jiasu'>
-			
-			<div class="zmiti-jiasu" v-if='showjiasu' v-tap='[jiasu]'>
-				<img :src="imgs.jiasu" alt="">
-				<img :src="imgs.jiasu1" alt="" :class="{'active':maxHeight<0}" />
-			</div>
-		</transition>
 
 
-		<div class="zmiti-title" :class="{'hide':!showOthers}">
+		<div class="zmiti-title" v-if='false' :class="{'hide':!showOthers}">
 			<img :src="imgs.title" alt="">
 
 			<div class="zmiti-logos">
@@ -38,52 +19,9 @@
 			</div>
 		</div>
 
-		<canvas ref='rocket' class="zmiti-rocket">
-		</canvas>
-		<img style="opacity:0;z-index:-1;position:fixed;" ref='rocket-img' :src="imgs.rocket" alt="">
-
-		<div class="zmiti-index-page lt-full" :style="{background:'url('+imgs.indexBg+') no-repeat center top',backgroundSize:'cover',WebkitTransform:'translateY('+transY+'px)'}">
-			<div class='zmiti-bottom'>
-				<img :src="imgs.mount" alt="">
-			</div>
-			<canvas :style="{WebkitTransform:'translateY('+-transY+'px)'}" ref='canvas'></canvas>
-			<div class="zmiti-send">
-				<img :src="imgs.send" alt="">
-				<img :src="imgs.cloud" alt="" class='zmiti-cloud' :class="{'active':starting}"/>
-			</div>
-
-		</div>
-		<div class="zmiti-start" v-tap='[start]' v-show ='showStartBtn'>
-			<img :src="imgs.start" alt="">
-		</div>
-
-		<div v-if='index>-1' class="zmiti-organization" v-for="(org,h) in organizationArr" :key='org.key'  :class="{'active':index === h}">
-			<span></span>
-			<span></span>
-			<span></span>
-			<span></span>
-			<div class="zmiti-organization-title">
-				<img :src="imgs.organization" alt="">
-				<span>{{org.title}}</span>
-			</div>
-			<h1 style="height:4vh;"></h1>
-			<div class="zmiti-units" v-for="(item,i) in org.items" :key="i+'1'">
-				<div v-if='item.type !=="text"' class="zmiti-unit-title" v-html='item.title+"："'></div>
-				<div  v-if='item.type !=="text"' class="zmiti-unit-names">
-					<div v-for="(unit,k) in item.units" :key="k">
-						{{unit}}
-					</div>
-				</div>
-			</div>
-			<div :key='l' class="zmiti-remark"  v-if='org.type="text"' v-for='(c,l) in organizationArr[index].content'>
-				{{c}}
-			</div>
-		</div>
+		<canvas  ref='canvas'></canvas>
 		
 		
-		<div class="zmiti-submit-bg" v-if='showSubmit' :class="{'active':maxHeight<0}">
-			<img :src="imgs.submitBg" alt="">
-		</div>
 	</div>
 </template>
 
@@ -103,6 +41,7 @@
 				transY:0,
 				pointH:0,
 				points:[],
+				stars:[],
 				showStartBtn:false,
 				index:-1,
 				showOthers:true,
@@ -124,31 +63,6 @@
 		
 		methods:{
 
-			jiasu(){
-				//加速球
-				clearInterval(this.t);
-				this.t = null;
-				this.index = -1;
-				this.maxHeight = -300;
-
-				var {obserable} = this;
-				setTimeout(()=>{
-					obserable.trigger({
-						type:'showForm'
-					})
-					this.starting = false;
-				},3000)
-
-
-				setTimeout(()=>{
-					this.showjiasu = false;
-					this.t  && clearInterval(this.t);
-				},1000)
-
-
-
-			},
-
 			imgStart(e){
 				e.preventDefault(); 
 			},
@@ -156,147 +70,96 @@
 				var canvas = this.$refs['canvas'];
 				canvas.width = this.viewW;
 				canvas.height = this.viewH;
-
-				var canvas1 = this.$refs['rocket'];
-				canvas1.width = this.viewW;
-				canvas1.height = this.viewH;
+			
 				return canvas;
 			},
-			start(){
-				this.starting = true;
 
-				this.showStartBtn = false;
-				
-				this.showOthers = false;
-				this.planeLeave();
+			addStar(){
+				for(var i = 0; i<100 ; i++){
+					var aStar = {
+						x:Math.round(Math.random()*this.viewW),
+						y:Math.round(Math.random()*this.viewH),
+						r:Math.random()*5,
+						ra:Math.random()*0.05,
+						alpha:Math.random(),
+						vx:Math.random()*0.2-0.1,
+						vy:Math.random()*0.2-0.1
+					}
+					this.stars.push(aStar);
+				}
 			},
-			initDocket(){
-				var canvas = this.$refs['rocket'];
-				var rocketContext = canvas.getContext('2d');
-				var rocketImg = this.$refs['rocket-img'];
-
-				var height=  500/2;
-				var i = 0;
-				
-
-				return {rocketContext,rocketImg};
-				
-			},
+			
 			initCanvas(){//
 				var canvas = this.setSize();
 				var context = canvas.getContext('2d');
-				var img = new Image();
-				var points = [];
-				img.onload = ()=>{
-					
-					for(var i = 0 ;i < 100;i++){
-						var size = 0;
-						if(i% 15 === 0){
-							size = Math.random()*10+10
+				this.addStar();
+				var rnd = 0;
+				
+				var zmitiAnimationFrame = window.requestAnimationFrame ||  window.webkitRequestAnimationFrame;
+				var width = canvas.width,
+					height=  canvas.height;
+
+				var WINDOW_WIDTH = this.viewH,
+					WINDOW_HEIGHT = this.viewH;
+				var render = ()=>{
+					context.fillStyle = 'rgba(14,12,62,.5)';
+					context.fillRect(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
+					//context.clearRect(0,0,WINDOW_WIDTH,WINDOW_HEIGHT)
+					for(var i =0; i<this.stars.length ; i++){
+						var star = this.stars[i];
+						if(i == rnd){
+							star.vx = -5;
+							star.vy = 4;
+							context.beginPath();
+							context.strokeStyle = 'rgba(255,255,255,'+star.alpha+')';
+							context.lineWidth = star.r;
+							context.moveTo(star.x,star.y);
+							context.lineTo(star.x+star.vx,star.y+star.vy);
+							//context.drawImage(img,star.x+star.vx,star.y+star.vy);
+							context.stroke();
+							context.closePath();
 						}
-						var  p = new Point({
-							context,
-							img,
-							size
-						});
-						points.push(p);
-						p.render();
-					}
-					var zmitiAnimationFrame = window.requestAnimationFrame ||  window.webkitRequestAnimationFrame;
-					var width = canvas.width,
-						height=  canvas.height;
-
-					var {rocketContext,rocketImg} = this.initDocket();
-					var h = this.viewH - 500/1.81 - 70;
-					var i = 0;
-					var x = 390;
-					var iNow = 0;
-					var scale = 1.5;
-					var defaultScale = 1.5;
-					var isChange = false;
-					var render = ()=>{
-						var h1 = 500-165;
-						if(this.starting){
-							context.clearRect(0,0,canvas.width,canvas.height);
-							rocketContext.clearRect(0,0,canvas.width,canvas.height);
-							i++;
-							i%=4;
-							h1 = 500;
-							h -= 8;
-						
-							defaultScale+=.0005;
-							scale = Math.min(defaultScale,2);
-							
-							x = Math.max(x,(750-258/scale)/2);
-							h = Math.max(h,this.maxHeight);
-						
-							if(h <= 80 && !isChange){
-								isChange = true;
-								this.showRemark = true;
-								this.index++;
-
-								this.showjiasu = true;
-
-								
-
-								this.t = setInterval(()=>{
-									
-									if(this.index>= this.organizationArr.length - 1){
-										
-										this.showjiasu = false;
-										this.maxHeight = -300;
-										clearInterval(this.t);
-										this.index = -1;
-										setTimeout(()=>{
-											this.obserable.trigger({
-												type:'showForm'
-											});
-											this.starting = false;
-										},2000)
-										return;
-									}else{
-										this.index++;
-									}
-
-								},8000)
-
-							}
-							points.map((p,i)=>{
-								p.y+=4;
-								if(p.y> height){
-									p.y = 0
-								}
-								p.render()
-							});	
-							iNow++;
-							if(iNow>10){
-
-								this.transY+=4;
-							}
-							
-							this.transY = Math.min(this.transY,height);
-							 
+						star.alpha += star.ra;
+						if(star.alpha<=0){
+							star.alpha = 0;
+							star.ra = -star.ra;
+							star.vx = Math.random()*0.2-0.1;
+							star.vy = Math.random()*0.2-0.1;
+						}else if(star.alpha>1){
+							star.alpha = 1;
+							star.ra = -star.ra
 						}
-
-						rocketContext.drawImage(rocketImg,i*258,0,258,h1,x,h,258/scale,(h1)/scale);
-
-						zmitiAnimationFrame(render)
+						star.x += star.vx;
+						if(star.x>=WINDOW_WIDTH){
+							star.x = 0;
+						}else if(star.x<0){
+							star.x = WINDOW_WIDTH;
+							star.vx = Math.random()*0.2-0.1;
+							star.vy = Math.random()*0.2-0.1;
+						}
+						star.y += star.vy;
+						if(star.y>=WINDOW_HEIGHT){
+							star.y = 0;
+							star.vy = Math.random()*0.2-0.1;
+							star.vx = Math.random()*0.2-0.1;
+						}else if(star.y<0){
+							star.y = WINDOW_HEIGHT;
+						}
+						context.beginPath();
+						var bg = context.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.r);
+						bg.addColorStop(0,'rgba(255,255,255,'+.5+')')
+						bg.addColorStop(1,'rgba(255,255,255,.1)')
+						context.fillStyle  = bg;
+						context.arc(star.x,star.y, star.r, 0, Math.PI*2, true);
+						context.fill();
+						context.closePath();
 
 					}
-
-					render();
-					
+					zmitiAnimationFrame(render);
 				}
-			
-				img.src = imgs.point;
+				render();
 			},
-			planeLeave(){
-				this.planeClass = 'leave';
-				this.showLight = false;
-				setTimeout(() => {
-					this.planeClass = 'leave1'
-				}, 1000);
-			}
+			
 		},
 		mounted(){
 
@@ -305,28 +168,7 @@
 			obserable.on('toggleIndex',(data)=>{
 				this.show = data.show;
 			})
-
 			this.initCanvas();
- 
-
-			setTimeout(() => {
-				}, 1000);
-			setTimeout(() => {
-				
-				this.planeClass = 'active';
-				setTimeout(() => {
-					this.showLight = true;
-					this.showStartBtn = true;
-				}, 600);
-				
-			}, 1000);
-
-			obserable.on('hideIndexSubmitBg',data=>{
-				this.showSubmit = data;
-				this.starting = !data;
-			})
-
-
 
 		}
 	}
